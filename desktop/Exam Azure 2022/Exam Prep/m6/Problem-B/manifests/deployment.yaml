@@ -1,0 +1,23 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: examapp-deployment
+  labels:
+    app: examapp-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: examapp
+  template:
+    metadata:
+      labels:
+        app: examapp
+    spec:
+      containers:
+      - name: examapp
+        image: chonotestacr.azurecr.io/chonochonov/azureexam:v1
+        ports:
+        - containerPort: 80
+          name: examapp

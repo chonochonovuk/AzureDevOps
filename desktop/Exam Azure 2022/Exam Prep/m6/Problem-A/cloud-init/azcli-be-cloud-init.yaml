@@ -1,0 +1,49 @@
+#cloud-config
+package_upgrade: true
+packages:
+  - php-fpm
+  - gcc 
+  - g++
+  - make
+  - autoconf
+  - libc-dev
+  - pkg-config
+  - php-pear
+  - php-dev
+runcmd:
+  - [ wget, "https://packages.microsoft.com/keys/microsoft.asc", -O, /tmp/microsoft.asc ]
+  - apt-key add /tmp/microsoft.asc
+  - [ wget, "https://packages.microsoft.com/config/ubuntu/18.04/prod.list", -O, /etc/apt/sources.list.d/mssql-release.list ]
+  - apt-get update
+  - env ACCEPT_EULA=Y apt-get install -y msodbcsql17 mssql-tools unixodbc-dev
+  - pecl install sqlsrv-5.8.1
+  - pecl install pdo_sqlsrv-5.8.1
+  - echo extension=sqlsrv.so > /etc/php/7.2/mods-available/sqlsrv.ini
+  - echo extension=pdo_sqlsrv.so > /etc/php/7.2/mods-available/pdo_sqlsrv.ini
+  - phpenmod sqlsrv pdo_sqlsrv
+  - sed -i.bak 's@listen = /run/php/php7.2-fpm.sock@listen = 9000@g' /etc/php/7.2/fpm/pool.d/www.conf
+  - systemctl restart php7.2-fpm
+write_files:
+  - owner: www-data:www-data
+  - path: /site/index.php
+    content: |
+      <h1>Top 10 cities in Bulgaria</h1>
+      <?php
+        //$connectionInfo = "";
+        //$serverName = "";
+        //$conn = "";
+      if( $conn === false ) {
+        die( print_r( sqlsrv_errors(), true));
+      }
+      $stmt = sqlsrv_query( $conn, "SELECT * FROM Cities");
+      if( $stmt === false ) {
+        die( print_r( sqlsrv_errors(), true));
+      }
+      print "<ol>\n";
+      while( $row = sqlsrv_fetch_array( $stmt, SQLSRV_FETCH_ASSOC) ) {
+        echo "<li>".$row['CityName']." -> ".$row['Population']."</li>\n";
+      }
+      print "</ol>\n";
+      print "<hr />\n";
+      print "<small>Serverd by: ".gethostname()."</small>\n";
+      ?>

@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dofepapp-deploy
+spec:
+  replicas: 5
+  selector:
+    matchLabels: 
+      app: dofepapp
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: dofepapp
+    spec:
+      containers:
+      - name: app-cont
+        image: chonotestacr.azurecr.io/chonochonov/dofepapp:v1
+        ports:
+        - containerPort: 80 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dofepapp-svc
+  labels:
+    app: dofepapp
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 80
+    name: phpapp-port
+  selector:
+    app: dofepapp

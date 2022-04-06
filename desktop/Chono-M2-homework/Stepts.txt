@@ -1,0 +1,6 @@
+1.Tried ARM template didn't work
+2.Create Windows VM 
+3.Add IIS feature to Network Server
+4.Stop the vm
+5.Capture it and create an image 
+6.Use this image to create a scale set with IIS
