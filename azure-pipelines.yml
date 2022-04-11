@@ -15,30 +15,26 @@ stages:
 - stage: Build
   displayName: Build and push stage
   jobs:
-  - deployment: Build
+  - job: Build
     displayName: Build
-    environment: 'k8sdev.default'  
     pool:
       vmImage: $(vmImageName)
-    strategy:
-      runOnce:
-        deploy:
-          steps:
-           - task: Docker@2
-             displayName: Build and push an image to container registry
-             inputs:
-               containerRegistry: 'test-pipeline'
-               repository: '$(imageRepository)'
-               command: 'buildAndPush'
-               Dockerfile: '$(dockerfilePath)'
-               tags: |
-                 $(tag)
-                 latest
-           - task: PublishPipelineArtifact@1
-             inputs:
-               targetPath: '$(Pipeline.Workspace)/s/yaml'
-               artifact: 'manifests'
-               publishLocation: 'pipeline'
+    steps:
+    - task: Docker@2
+      displayName: Build and push an image to container registry
+      inputs:
+        containerRegistry: 'test-pipeline'
+        repository: '$(imageRepository)'
+        command: 'buildAndPush'
+        Dockerfile: '$(dockerfilePath)'
+        tags: |
+          $(tag)
+          latest
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: '$(Pipeline.Workspace)/s/yaml'
+        artifact: 'manifests'
+        publishLocation: 'pipeline'
         
 - stage: Deploy
   displayName: Deploy to Dev
@@ -46,11 +42,15 @@ stages:
   variables:
     acrsecret: chonoakstoactauth
   jobs:
-  - job: Deploy
+  - deployment: Deploy
     displayName: Deploy to AKS
     pool:
       vmImage: $(vmImageName)
-    steps:
+    environment:'k8sdev.default'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
       - task: DownloadPipelineArtifact@2
         inputs:
           buildType: 'current'
@@ -69,3 +69,4 @@ stages:
           namespace: 'default'
           manifests: 
             $(Pipeline.Workspace)/manifests/application.yaml
+
