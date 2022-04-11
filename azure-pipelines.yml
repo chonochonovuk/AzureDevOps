@@ -27,7 +27,9 @@ stages:
         repository: '$(imageRepository)'
         command: 'buildAndPush'
         Dockerfile: '$(dockerfilePath)'
-        tags: '$(tag)'
+        tags: |
+          '$(tag)'
+          'latest'
     - task: PublishPipelineArtifact@1
       inputs:
         targetPath: '$(Pipeline.Workspace)/s/yaml'
