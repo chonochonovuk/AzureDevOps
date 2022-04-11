@@ -46,27 +46,27 @@ stages:
     displayName: Deploy to AKS
     pool:
       vmImage: $(vmImageName)
-    environment:'k8sdev.default'
+    environment: 'k8sdev.default'
     strategy:
       runOnce:
         deploy:
           steps:
-      - task: DownloadPipelineArtifact@2
-        inputs:
-          buildType: 'current'
-          artifactName: 'manifests'
-          targetPath: '$(Pipeline.Workspace)/manifests'
-      - task: KubernetesManifest@0
-        inputs:
-          action: 'createSecret'
-          namespace: 'default'
-          secretType: 'dockerRegistry'
-          secretName: '$(acrsecret)'
-          dockerRegistryEndpoint: 'test-pipeline'
-      - task: KubernetesManifest@0
-        inputs:
-          action: 'deploy'
-          namespace: 'default'
-          manifests: 
-            $(Pipeline.Workspace)/manifests/application.yaml
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: 'current'
+              artifactName: 'manifests'
+              targetPath: '$(Pipeline.Workspace)/manifests'
+          - task: KubernetesManifest@0
+            inputs:
+              action: 'createSecret'
+              namespace: 'default'
+              secretType: 'dockerRegistry'
+              secretName: '$(acrsecret)'
+              dockerRegistryEndpoint: 'test-pipeline'
+          - task: KubernetesManifest@0
+            inputs:
+              action: 'deploy'
+              namespace: 'default'
+              manifests: 
+                $(Pipeline.Workspace)/manifests/application.yaml
 
