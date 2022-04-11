@@ -23,22 +23,22 @@ stages:
     strategy:
       runOnce:
         deploy:
-         steps:
-         - task: Docker@2
-           displayName: Build and push an image to container registry
-           inputs:
-             containerRegistry: 'test-pipeline'
-             repository: '$(imageRepository)'
-             command: 'buildAndPush'
-             Dockerfile: '$(dockerfilePath)'
-             tags: |
-               $(tag)
-               latest
-         - task: PublishPipelineArtifact@1
-           inputs:
-             targetPath: '$(Pipeline.Workspace)/s/yaml'
-             artifact: 'manifests'
-             publishLocation: 'pipeline'
+          steps:
+           - task: Docker@2
+             displayName: Build and push an image to container registry
+             inputs:
+               containerRegistry: 'test-pipeline'
+               repository: '$(imageRepository)'
+               command: 'buildAndPush'
+               Dockerfile: '$(dockerfilePath)'
+               tags: |
+                 $(tag)
+                 latest
+           - task: PublishPipelineArtifact@1
+             inputs:
+               targetPath: '$(Pipeline.Workspace)/s/yaml'
+               artifact: 'manifests'
+               publishLocation: 'pipeline'
         
 - stage: Deploy
   displayName: Deploy to Dev
