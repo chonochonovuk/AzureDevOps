@@ -30,7 +30,7 @@ stages:
         tags: '$(tag)'
     - task: PublishPipelineArtifact@1
       inputs:
-        targetPath: '$(Pipeline.Workspace)/yaml'
+        targetPath: '$(Pipeline.Workspace)/s/yaml'
         artifact: 'manifests'
         publishLocation: 'pipeline'
         
