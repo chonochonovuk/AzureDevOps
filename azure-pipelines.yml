@@ -15,26 +15,30 @@ stages:
 - stage: Build
   displayName: Build and push stage
   jobs:
-  - job: Build
+  - deployment: Build
     displayName: Build
+    environment: 'k8sdev.default'  
     pool:
       vmImage: $(vmImageName)
-    steps:
-    - task: Docker@2
-      displayName: Build and push an image to container registry
-      inputs:
-        containerRegistry: 'test-pipeline'
-        repository: '$(imageRepository)'
-        command: 'buildAndPush'
-        Dockerfile: '$(dockerfilePath)'
-        tags: |
-          $(tag)
-          latest
-    - task: PublishPipelineArtifact@1
-      inputs:
-        targetPath: '$(Pipeline.Workspace)/s/yaml'
-        artifact: 'manifests'
-        publishLocation: 'pipeline'
+    strategy:
+      runOnce:
+        deploy:
+         steps:
+         - task: Docker@2
+           displayName: Build and push an image to container registry
+           inputs:
+             containerRegistry: 'test-pipeline'
+             repository: '$(imageRepository)'
+             command: 'buildAndPush'
+             Dockerfile: '$(dockerfilePath)'
+             tags: |
+               $(tag)
+               latest
+         - task: PublishPipelineArtifact@1
+           inputs:
+             targetPath: '$(Pipeline.Workspace)/s/yaml'
+             artifact: 'manifests'
+             publishLocation: 'pipeline'
         
 - stage: Deploy
   displayName: Deploy to Dev
@@ -55,7 +59,6 @@ stages:
       - task: KubernetesManifest@0
         inputs:
           action: 'createSecret'
-          kubernetesServiceConnection: 'AKS service conection'
           namespace: 'default'
           secretType: 'dockerRegistry'
           secretName: '$(acrsecret)'
@@ -63,7 +66,6 @@ stages:
       - task: KubernetesManifest@0
         inputs:
           action: 'deploy'
-          kubernetesServiceConnection: 'AKS service conection'
           namespace: 'default'
           manifests: 
             $(Pipeline.Workspace)/manifests/application.yaml
